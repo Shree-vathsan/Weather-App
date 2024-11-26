@@ -1,103 +1,125 @@
-import React, { useState } from 'react'
-import './WeatherApp.css'
-import Search_icon from '../Assets/search.png';
-import clear_icon from '../Assets/clear.png';
-import cloud_icon from '../Assets/cloud.png';
-import drizzle_icon from '../Assets/drizzle.png';
-import rain_icon from '../Assets/rain.png';
-import snow_icon from '../Assets/snow.png';
-import wind_icon from '../Assets/wind.png';
-import humidity_icon from '../Assets/humidity.png';
+import React, { useState } from "react";
+import "./WeatherApp.css";
+import searchIcon from "../Assets/search.png";
+import clearIcon from "../Assets/clear.png";
+import cloudIcon from "../Assets/cloud.png";
+import drizzleIcon from "../Assets/drizzle.png";
+import rainIcon from "../Assets/rain.png";
+import snowIcon from "../Assets/snow.png";
+import windIcon from "../Assets/wind.png";
+import humidityIcon from "../Assets/humidity.png";
 
+const WeatherApp = () => {
+  const [darkMode, setDarkMode] = useState(false);
+  const [unit, setUnit] = useState("Metric");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [weatherDetails, setWeatherDetails] = useState({
+    temperature: 20, // in Celsius
+    location: "London",
+    description: "Haze",
+    high: 22,
+    low: 18,
+    humidity: "60%",
+    windSpeed: "15 km/h",
+  });
 
-const WeatherApp =  () => {
-    let api_key="a23a51ff6762e85151145fe752b703fe";
-    const [wicon,setWicon]=useState(cloud_icon);
-    const search= async() =>{
-        const element =document.getElementsByClassName("cityinput")
-        if(element[0].value==="")
-        {
-            return 0;
-        }
-        let url=`https://api.openweathermap.org/data/2.5/weather?q=${element[0].value}&units=Metric&appid=${api_key}`;
-        let response = await fetch(url);
-        let data = await response.json();
-        const humidity = document.getElementsByClassName("humidity-percent");
-        const wind = document.getElementsByClassName("wind-speed");
-        const temperature = document.getElementsByClassName("weather-temp");
-        const location = document.getElementsByClassName("weather-location");
+  const toggleDarkMode = () => {
+    setDarkMode((prevMode) => !prevMode);
+  };
 
-        humidity[0].innerHTML = data.main.humidity+"%";
-        wind[0].innerHTML = data.wind.speed+" km/h";
-        temperature[0].innerHTML = data.main.temp+" °C";
-        location[0].innerHTML = data.name;
+  const toggleUnit = () => {
+    setUnit((prevUnit) => (prevUnit === "Metric" ? "Imperial" : "Metric"));
+    setWeatherDetails((prevDetails) => {
+      const newTemp =
+        unit === "Metric"
+          ? (prevDetails.temperature * 9) / 5 + 32 // Celsius to Fahrenheit
+          : ((prevDetails.temperature - 32) * 5) / 9; // Fahrenheit to Celsius
+      return {
+        ...prevDetails,
+        temperature: Math.round(newTemp * 10) / 10, // Rounded value
+        high:
+          unit === "Metric"
+            ? (prevDetails.high * 9) / 5 + 32
+            : ((prevDetails.high - 32) * 5) / 9,
+        low:
+          unit === "Metric"
+            ? (prevDetails.low * 9) / 5 + 32
+            : ((prevDetails.low - 32) * 5) / 9,
+      };
+    });
+  };
 
-        if(data.weather[0].icon==="01d" || data.weather[0].icon==="01n")
-        {
-            setWicon(clear_icon);
-        }
-        else if(data.weather[0].icon==="02d" || data.weather[0].icon==="02n")
-        {
-            setWicon(cloud_icon);
-        }
-        else if(data.weather[0].icon==="03d" || data.weather[0].icon==="03n")
-        {
-            setWicon(drizzle_icon);
-        }
-        else if(data.weather[0].icon==="04d" || data.weather[0].icon==="04n")
-        {
-            setWicon(drizzle_icon);
-        }
-        else if(data.weather[0].icon==="09d" || data.weather[0].icon==="09n")
-        {
-            setWicon(rain_icon);
-        }
-        else if(data.weather[0].icon==="10d" || data.weather[0].icon==="10n")
-        {
-            setWicon(rain_icon);
-        }
-        else if(data.weather[0].icon==="13d" || data.weather[0].icon==="13n")
-        {
-            setWicon(snow_icon);
-        }
-        else{
-            setWicon(clear_icon);
-        }
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return; // Ignore empty searches
+    console.log(`Searching for weather details in: ${searchQuery}`);
+    // Simulate API call and update weather details
+    setWeatherDetails({
+      ...weatherDetails,
+      location: searchQuery,
+      temperature: Math.floor(Math.random() * 35) + 5, // Randomized for demo
+    });
+    setSearchQuery("");
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
     }
+  };
 
   return (
-    <div>
-        <div className="container">
-            <div className="top-bar">
-                <input type="text" className="cityinput" placeholder='Search' />
-                <div className="search-icon" onClick={()=>{search()}}>
-                    <img src={Search_icon} alt="" />
-                </div>
-            </div>
-            <div className="weather-image">
-                <img src={wicon} alt="" />
-            </div>
-            <div className="weather-temp">24°C</div>
-            <div className="weather-location">London</div>
-            <div className="data-container">
-                <div className="element">
-                    <img src={humidity_icon} className='icon' alt="" />
-                    <div className="data">
-                        <div className="humidity-percent">69%</div>
-                        <div className="text">Humidity</div>
-                    </div>
-                </div>
-                <div className="element">
-                    <img src={wind_icon} className='icon' alt="" />
-                    <div className="data">
-                        <div className="wind-speed">18 kmph</div>
-                        <div className="text">Wind Speed</div>
-                    </div>
-                </div>
-            </div>
+    <div className={`app-container ${darkMode ? "dark" : "light"}`}>
+      <div className="top-bar">
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Enter city"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <img
+            src={searchIcon}
+            alt="Search"
+            className="search-icon"
+            onClick={handleSearch}
+          />
         </div>
+        <button onClick={toggleUnit}>
+          {unit === "Metric" ? "°F" : "°C"}
+        </button>
+        <button onClick={toggleDarkMode}>
+          {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
+      </div>
+      <div className="weather-card">
+        <div className="weather-header">
+          <div className="location">{weatherDetails.location}</div>
+          <div className="icon">
+            <img src={cloudIcon} alt="weather icon" />
+          </div>
+          <div className="temperature">
+            {weatherDetails.temperature}°{unit === "Metric" ? "C" : "F"}
+          </div>
+        </div>
+        <div className="weather-details">
+          <div className="description">{weatherDetails.description}</div>
+          <div className="high-low">
+            <div>High: {Math.round(weatherDetails.high)}°</div>
+            <div>Low: {Math.round(weatherDetails.low)}°</div>
+          </div>
+          <div className="humidity-wind">
+            <div className="info">
+              <img src={humidityIcon} alt="humidity" /> {weatherDetails.humidity}
+            </div>
+            <div className="info">
+              <img src={windIcon} alt="wind" /> {weatherDetails.windSpeed}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default WeatherApp
+export default WeatherApp;
